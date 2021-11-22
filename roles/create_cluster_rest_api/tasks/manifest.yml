@@ -1,0 +1,33 @@
+---
+# tasks file for manifests
+
+- name: Load manifest
+  set_fact:
+    manifest: "{{ lookup('template', '01-master-node-scheduler.yml.j2' ) }}"
+  when: manifests | bool == True
+
+- debug: # noqa unnamed-task
+    var: manifest
+    verbosity: 1
+  when: manifests | bool == True
+
+- name: Apply manifest
+  crucible.ocm.rest_api_call:
+    url: "{{ URL_ASSISTED_INSTALLER_CLUSTERS }}/{{ cluster_id }}/manifests"
+    method: "POST"
+    query: None
+    access_token: "{{ ACCESS_TOKEN }}"
+    api_token: "{{ API_TOKEN }}"
+    body:
+      {
+        "folder": "manifests",
+        "file_name": "{{ item }}",
+        "content": "{{ manifest | string | b64encode }}",
+      }
+  when: manifests | bool == True
+  register: http_reply
+
+- debug: # noqa unnamed-task
+    var: http_reply
+    verbosity: 1
+  when: manifests | bool == True

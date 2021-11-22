@@ -1,0 +1,17 @@
+---
+- import_playbook: playbooks/generate_ssh_key_pair.yml
+  when: GENERATE_SSH_KEYS | default(True) == True
+
+- import_playbook: playbooks/create_cluster_rest_api.yml
+
+- import_playbook: playbooks/generate_discovery_iso.yml
+
+- import_playbook: playbooks/boot_iso.yml
+  vars:
+    boot_iso_hosts: masters,workers
+
+- import_playbook: playbooks/install_cluster.yml
+
+- import_playbook: playbooks/monitor_hosts.yml
+
+- import_playbook: playbooks/monitor_cluster.yml
