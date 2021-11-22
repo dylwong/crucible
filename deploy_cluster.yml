@@ -3,16 +3,6 @@
   when: GENERATE_SSH_KEYS | default(True) == True
 
 - import_playbook: playbooks/create_cluster.yml
-  when: use_sno | default(False) == False and use_rest_api | default(False) == False 
-
-- import_playbook: playbooks/create_sno_cluster.yml
-  when: use_sno | default(False) == True and use_rest_api | default(False) == False 
-
-- import_playbook: playbooks/create_cluster_rest_api.yml
-  when: use_sno | default(False) == False and use_rest_api | default(False) == True 
-
-- import_playbook: playbooks/create_sno_cluster_rest_api.yml 
-  when: use_sno | default(False) == True and use_rest_api | default(False) == True 
 
 - import_playbook: playbooks/generate_discovery_iso.yml
 

@@ -3,10 +3,20 @@ controller_tag: "{{ ai_version }}"
 installer_agent_tag: "{{ ai_version }}"
 installer_tag: "{{ ai_version }}"
 
-images_to_get_hash_for:
-  release:
-    image: quay.io/openshift-release-dev/ocp-release
-    tag: "{{ release_tag | default(openshift_full_version + '-x86_64') }}"
+ocp_release_versions_map_all:
+  '4.6': 4.6.16
+  '4.7': 4.7.33
+  '4.8': 4.8.14
+  '4.9': 4.9.0
+
+get_release_images: true
+get_all_release_versions: false
+
+ocp_release_versions_map: "{{ get_all_release_versions | ternary(ocp_release_versions_map_all, {openshift_version: ocp_release_versions_map_all[openshift_version]}) }}"
+
+release_image_url: "quay.io/openshift-release-dev/ocp-release"
+
+assisted_installer_images:
   controller:
     image: quay.io/ocpmetal/assisted-installer-controller
     tag: "{{ controller_tag }}"
@@ -16,6 +26,8 @@ images_to_get_hash_for:
   installer:
     image: quay.io/ocpmetal/assisted-installer
     tag: "{{ installer_tag }}"
+
+images_to_get_hash_for: "{{ assisted_installer_images | combine(release_images | default({})) }}"
 
 destination_hosts:
   - registry_host

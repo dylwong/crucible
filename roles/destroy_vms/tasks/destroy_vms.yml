@@ -1,24 +1,15 @@
 - name: Find vm creation scripts
   find:
-    path: "{{ vm_create_scripts }}"
+    path: "{{ vm_create_scripts_dir }}"
   register: creation_to_remove
 
-- name: Remove file in {{ vm_create_scripts }} dir
+- name: Remove file in {{ vm_create_scripts_dir }} dir
   file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ creation_to_remove.files |  map(attribute='path') | list }}"
-
-- name: List vms
-  community.libvirt.virt:
-    command: list_vms
-  register: vms_list
-
-- name: Get filtered vm list
-  set_fact:
-    vms_to_remove: "{{ [item] + vms_to_remove | default([]) }}"
-  loop: "{{ vms_list.list_vms }}"
-  when: item in hostvars and hostvars[item]['vendor'] | lower == 'kvm'
+  loop: "{{ creation_to_remove.files | map(attribute='path') | select('match', prefix_regex) | list }}"
+  vars:
+    prefix_regex: "^{{ vm_create_scripts_dir }}/?({{ vms_to_remove | join('|') }})_setup_vm.sh$"
 
 - name: Destroy VM
   community.libvirt.virt:
@@ -28,5 +19,5 @@
 
 - name: Undefine VM # The 'loop' default will prevent action when none is needed. # noqa no-changed-when
   shell:
-    cmd: "virsh undefine --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
+    cmd: "virsh undefine --remove-all-storage --nvram {{ item }}" # community.libvirt.virt undefine doesn't have the ability to specify --nvram
   loop: "{{ vms_to_remove | default([]) }}"
