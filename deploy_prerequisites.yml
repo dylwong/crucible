@@ -1,10 +1,13 @@
 ---
 - import_playbook: prereq_facts_check.yml
+  when: use_rest_api is false
 
 - name: Play to populate image_hashes for relevant images
   hosts: localhost
   roles:
     - get_image_hash
+  when: use_rest_api is false
+
 
 - import_playbook: playbooks/deploy_ntp.yml
 
@@ -15,6 +18,7 @@
 - import_playbook: playbooks/deploy_dns.yml
 
 - import_playbook: playbooks/deploy_assisted_installer_onprem.yml
+  when: use_rest_api is false
 
 - import_playbook: playbooks/create_vms.yml
 

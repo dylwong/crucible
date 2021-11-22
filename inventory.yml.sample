@@ -11,17 +11,19 @@ all:
     # e.g. api.clustername.example.lab, worker1.clustername.example.lab
     cluster_name: clustername
     base_dns_domain: example.lab
+    use_sno: true
+    use_rest_api: true
 
     # OpenShift version
     openshift_full_version: 4.6.16
-
+    api_token: "{{ VAULT_API_KEY }}"
     # Virtual IP addresses used to access the resulting OpenShift cluster
     api_vip: 10.60.0.96 # the IP address to be used for api.clustername.example.lab and api-int.clustername.example.lab
     ingress_vip: 10.60.0.97 # the IP address to be used for *.apps.clustername.example.lab
 
     ## Allocate virtual IPs via DHCP server. Equivalent to the vip_dhcp_allocation configuration option of Assisted Installer
     vip_dhcp_allocation: false
-
+    
     # The subnet on which all nodes are (or will be) accessible.
     machine_network_cidr: 10.60.0.0/24
 
@@ -47,7 +49,7 @@ all:
     setup_dns_service: false
     setup_registry_service: false # Only required for a Restricted Network installation
     setup_http_store_service: true
-
+# single node openshift deployment (creates a single master node cluster on bare-metal or kvm)
 
     # NTP Service
     # ntp_server is the address at which the NTP service is (or will be) available
@@ -240,6 +242,26 @@ all:
         bmc_user: "{{ VAULT_NODES_BMC_USER | mandatory }}"
         bmc_password: "{{ VAULT_NODES_BMC_PASSWORD | mandatory }}"
       children:
+        sno_master:
+          vars:
+            role: master
+            vendor: KVM # this example is a virtual control plane
+            bmc_address: "vm_host.clustername.example.lab:8082" # port can be changed using sushy_tools_port on the vm_host
+            vm_spec:
+              cpu_cores: 4
+              ram_mib: 6144
+              disk_size_gb: 20
+          hosts:
+            super1:
+              ansible_host: 10.60.0.101
+              mac: "DE:AD:BE:EF:C0:2C"
+
+              # # Uncomment to set custom BMC credentials for the node
+              # # These variables must be set in the inventory.vault.yml file
+              # bmc_user: "{{ VAULT_NODES_SUPER1_BMC_USER | mandatory }}"
+              # bmc_password: "{{ VAULT_NODES_SUPER1_BMC_PASSWORD | mandatory }}"
+
+
         masters:
           vars:
             role: master

@@ -2,7 +2,7 @@
   hosts: bastion
   gather_facts: False
   roles:
-    - create_cluster
+    - create_cluster 
   vars:
     - disconnected: "{{ use_local_mirror_registry | default(setup_registry_service | default(true)) }}"
     - CLUSTER_NAME: "{{ cluster_name }}"
